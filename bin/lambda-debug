@@ -1,0 +1,75 @@
+#!/bin/bash
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+function get_lambda_env_vars() {
+  awslocal --profile=localstack lambda get-function-configuration --function-name "$1" --output json | jq -c ".Environment.Variables"
+}
+
+function get_lambda_debug_port() {
+  local lambda_name="$1"
+  docker ps --filter "name=localstack-sample-${lambda_name}" --format "{{ .Ports }}" \
+    | sed -e 's/0.0.0.0:\([0-9]\{1,\}\)->9229\/tcp/\1/'
+}
+
+function list_lambdas() {
+  # shellcheck disable=SC2016
+  # Using 'package.json' as a marker for "active in source control" (filters our 'dist' directories leftover from old builds)
+  find "$PRJ_DIR"/lambdas/*/package.json -type f -maxdepth 0 -mindepth 0 -print0 \
+    | xargs -0 -I{} sh -c 'basename `dirname {}`' \
+    | sort \
+    | xargs -I{} echo "- {}"
+}
+
+# Activate the virtual environment
+activate_venv
+
+# Parse args
+LAMBDA_NAME="$1"
+if [[ -z "$LAMBDA_NAME" ]]; then
+  log_err "Available lambdas:"
+  list_lambdas
+  log_err "Missing required argument: <lambda-name>"
+  log_err "Usage: $(basename "$0") [<lambda-name>]"
+  exit 1
+fi
+
+# Check that the supplied lambda name is valid (on filesystem AND in localstack)
+FUNCTION_NAME="localstack-sample-$LAMBDA_NAME"
+LAMBDA_DIR=$(find "$PRJ_DIR"/lambdas -type d -maxdepth 1 -mindepth 1 -name "$LAMBDA_NAME")
+if [[ -z "$LAMBDA_DIR" ]]; then
+  fail "Unable to find lambda in project files: $LAMBDA_NAME"
+fi
+if ! awslocal --profile=localstack lambda get-function --function-name "$FUNCTION_NAME" >&/dev/null; then
+  fail "Unable to find deployed lambda in Localstack: $FUNCTION_NAME"
+fi
+
+# Localstack runs lambdas in a sticky container (lasts between invocations)
+log_info "Waiting for function container to come up"
+while ! DEBUG_PORT=$(get_lambda_debug_port "$LAMBDA_NAME") || [[ -z "$DEBUG_PORT" ]]; do
+  echo -n "."
+  sleep 1
+done
+echo
+log_info "Lambda found! Node inspect listening on port: $DEBUG_PORT"
+
+# Generate or update the Webstorm run configuration
+LAMBDA_DIR=${LAMBDA_DIR#$PRJ_DIR}
+RUN_CONFIG_NAME="[debug] ${LAMBDA_NAME}"
+log_info "Generating run configuration: $RUN_CONFIG_NAME"
+mkdir -p "${PRJ_DIR}/.run"
+cat <<EOF > "${PRJ_DIR}/.run/${RUN_CONFIG_NAME}.run.xml"
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="${RUN_CONFIG_NAME}" type="ChromiumRemoteDebugType" factoryName="Chromium Remote" port="${DEBUG_PORT}">
+    <mapping url="file:///var/task" local-file="\$PROJECT_DIR\$${LAMBDA_DIR}/dist" />
+    <method v="2" />
+  </configuration>
+</component>
+EOF
+
+# Direct the script user
+log_info "Config generated!  Next steps:"
+log_info "  1. Open Webstorm"
+log_info "  2. Debug the '${RUN_CONFIG_NAME}' run configuration"
+log_info "  3. Set breakpoints in the '${LAMBDA_NAME}' lambda"
+log_info "  4. ???"
+log_info "  5. Profit."

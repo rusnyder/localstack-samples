@@ -1,0 +1,12 @@
+{
+  "name": "@repo/tsconfig",
+  "version": "1.0.0",
+  "description": "Shared tsconfig used across projects",
+  "scripts": {
+    "clean": "rm -rf .turbo dist node_modules"
+  },
+  "private": true,
+  "files": [
+    "base.json"
+  ]
+}

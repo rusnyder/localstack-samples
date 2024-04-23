@@ -1,0 +1,25 @@
+#!/bin/bash
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+# Ensure output directory exists
+mkdir -p dist
+
+# Activate the virtualenv (loads awslocal)
+activate_venv
+export_localstack_aws_credentials
+
+# Deploy a hot-reloading lambda to localstack
+FUNCTION_NAME="localstack-sample-$(basename $(PWD))"
+NODE_MAJOR_VERSION=$(node --version | sed -e 's/^v\([0-9]\{1,\}\).*/\1/')
+if ! awslocal lambda get-function --function-name "$FUNCTION_NAME" >/dev/null; then
+  fail "Lambda doesn't exist: $FUNCTION_NAME"
+fi
+if ! awslocal lambda update-function-code \
+    --function-name "$FUNCTION_NAME" \
+    --s3-bucket "hot-reload" \
+    --s3-key "$(PWD)/dist" >/dev/null; then
+  fail "Failed to update lambda function: $FUNCTION_NAME"
+fi
+
+# Rebuild the lambda after any changes (triggers hot-reload)
+esbuild --bundle --minify --platform=node --sourcemap --outfile=dist/index.js --watch "$@"

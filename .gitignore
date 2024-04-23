@@ -1,0 +1,67 @@
+#############################################################################
+#                                  General                                  #
+#############################################################################
+# Local environment files
+.env
+
+# Editors
+*.swp
+.idea
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/.terraform.tfstate*
+**/localstack_providers_override.tf
+
+# Localstack
+localstack/data
+
+# Mac
+.DS_Store
+
+# Generated run configurations
+.run/\[debug\]*.run.xml
+
+
+#############################################################################
+#                            Javascript/Typescript                          #
+#############################################################################
+# Yarn Berry PnP (not using Zero-Installs)
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Yarn Berry Node Modules
+**/node_modules/
+
+# Javascript/Typescript builds
+**/build/
+**/dist/
+
+# Turborepo
+**/.turbo/
+/.turbo-cache
+
+
+#############################################################################
+#                                   Python                                  #
+#############################################################################
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+venv
+.venv
+
+# Python testing/coverage output
+.hypothesis/

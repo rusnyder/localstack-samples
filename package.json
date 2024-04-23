@@ -1,0 +1,66 @@
+{
+  "name": "localstack-samples",
+  "version": "1.0.0",
+  "description": "Sample Localstack repo and tools",
+  "author": "Russell Snyder",
+  "private": true,
+  "homepage": "https://github.com/rusnyder/localstack-samples#readme",
+  "workspaces": [
+    "packages/*",
+    "lambdas/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rusnyder/localstack-samples.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rusnyder/localstack-samples/issues"
+  },
+  "scripts": {
+    "build": "turbo run build --output-logs=new-only",
+    "clean": "turbo run clean",
+    "deploy": "turbo run deploy --output-logs=new-only",
+    "format": "turbo run format",
+    "lint": "turbo run lint",
+    "dev": "turbo run --concurrency=64 dev"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "@yarnpkg/sdks": "*",
+    "eslint": "*",
+    "eslint-config-prettier": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-import": "*",
+    "jszip": "*",
+    "prettier": "*",
+    "ts-loader": "*",
+    "ts-node": "*",
+    "turbo": "1.13.2",
+    "typescript": "*",
+    "zod": "3.21.4"
+  },
+  "resolutions": {
+    "@types/aws-lambda": "8.10.114",
+    "@typescript-eslint/eslint-plugin": "6.7.3",
+    "@typescript-eslint/parser": "6.7.3",
+    "@types/node": "^18.6.3",
+    "aws-lambda": "^1.0.7",
+    "esbuild": "0.20.2",
+    "eslint": "8.50.0",
+    "eslint-config-prettier": "9.0.0",
+    "eslint-plugin-import": "2.28.1",
+    "eslint-import-resolver-typescript": "3.6.1",
+    "jszip": "^3.8.0",
+    "prettier": "2.8.8",
+    "ts-loader": "9.4.2",
+    "ts-node": "10.9.1",
+    "typescript": "5.2.2"
+  },
+  "engines": {
+    "node": ">=18 <19"
+  },
+  "packageManager": "yarn@3.8.1"
+}

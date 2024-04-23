@@ -1,0 +1,64 @@
+#!/bin/bash
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+# Arguments
+LAMBDA_NAME="$1"
+if [[ -z "$LAMBDA_NAME" ]]; then
+  fail "Missing required argument: <lambda-name>"
+fi
+
+# Load the Localstack CLI
+activate_venv
+export_localstack_aws_credentials
+
+# Create or update the lambda
+FUNCTION_NAME="localstack-sample-$LAMBDA_NAME"
+if awslocal lambda get-function --function-name "$FUNCTION_NAME" &>/dev/null; then
+  log_info "Updating lambda: $FUNCTION_NAME"
+  if awslocal lambda update-function-code \
+      --function-name "$FUNCTION_NAME" \
+      --zip-file fileb://dist/index.zip \
+      >/dev/null; then
+    log_info "Updated lambda: $FUNCTION_NAME"
+  else
+    fail "Failed to update lambda: $FUNCTION_NAME"
+  fi
+else
+  log_info "Creating lambda: $FUNCTION_NAME"
+  if awslocal lambda create-function \
+      --function-name "$FUNCTION_NAME" \
+      --runtime nodejs18.x \
+      --zip-file fileb://dist/index.zip \
+      --handler index.handler \
+      --role arn:aws:iam::000000000000:role/lambda-role \
+      >/dev/null; then
+    log_info "Created lambda: $FUNCTION_NAME"
+  else
+    fail "Failed to create lambda: $FUNCTION_NAME"
+  fi
+fi
+
+# Ensure the Function URL exists
+if awslocal lambda get-function-url-config --function-name "$FUNCTION_NAME" &>/dev/null; then
+  if FUNCTION_URL="$(
+    awslocal lambda update-function-url-config \
+      --function-name "$FUNCTION_NAME" \
+      --auth-type NONE \
+      | python -c 'import json, sys; print(json.load(sys.stdin)["FunctionUrl"])'
+  )"; then
+    log_info "Updated lambda function URL: ${FUNCTION_URL}"
+  else
+    fail "Failed to update lambda function url"
+  fi
+else
+  if FUNCTION_URL="$(
+    awslocal lambda create-function-url-config \
+      --function-name "$FUNCTION_NAME" \
+      --auth-type NONE \
+      | python -c 'import json, sys; print(json.load(sys.stdin)["FunctionUrl"])'
+  )"; then
+    log_info "Created lambda function URL: ${FUNCTION_URL}"
+  else
+    fail "Failed to update lambda function url"
+  fi
+fi

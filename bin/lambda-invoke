@@ -1,0 +1,28 @@
+#!/bin/bash
+. "$(dirname "${BASH_SOURCE[0]}")/common"
+
+# Arguments
+LAMBDA_NAME="$1"
+if [[ -z "$LAMBDA_NAME" ]]; then
+  fail "Missing required argument: <lambda-name>"
+fi
+PAYLOAD="$2"
+
+# Load the Localstack CLI
+activate_venv
+export_localstack_aws_credentials
+
+# Find the function url
+FUNCTION_NAME="localstack-sample-$LAMBDA_NAME"
+if ! FUNCTION_URL="$(awslocal lambda get-function-url-config --function-name "$FUNCTION_NAME" --output text --query 'FunctionUrl')"; then
+  fail "Failed to lookup function URL for lambda: $FUNCTION_NAME"
+fi
+
+# Invoke the lambda via its url
+if [[ -n "$PAYLOAD" ]]; then
+  curl -X POST "$FUNCTION_URL" \
+    -H 'Content-Type: application/json' \
+    -d "$PAYLOAD"
+else
+  curl -X POST "$FUNCTION_URL"
+fi

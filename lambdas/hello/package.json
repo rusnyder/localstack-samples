@@ -1,0 +1,25 @@
+{
+  "name": "hello",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "../../bin/lambda-build src/hello.ts",
+    "dev": "../../bin/lambda-dev src/hello.ts",
+    "deploy": "../../bin/lambda-deploy hello",
+    "clean": "rm -rf .turbo dist node_modules",
+    "lint": "prettier --ignore-path ../../.prettierignore --check . && eslint src/**/*.ts",
+    "format": "prettier --ignore-path ../../.prettierignore --write ."
+  },
+  "dependencies": {
+    "aws-lambda": "*"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "*",
+    "@types/aws-lambda": "*",
+    "esbuild": "*",
+    "prettier": "*",
+    "typescript": "*"
+  },
+  "engines": {
+    "node": ">=18 <19"
+  }
+}

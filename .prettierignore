@@ -1,0 +1,24 @@
+# development
+**/.idea
+**/.vscode
+**/bin
+
+# Yarn 2 generated artifacts
+.pnp.*
+.yarn/*
+
+# configuration
+yarn.lock
+
+# code
+**/lib/graphql.ts
+
+# build
+**/.next
+**/.turbo
+**/build
+**/dist
+**/node_modules
+
+# deployment
+.github/workflows/

@@ -1,0 +1,19 @@
+services:
+  localstack:
+    image: localstack/localstack:3.3.0
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559" # external services port range
+      - "127.0.0.1:443:443" # LocalStack HTTPS Gateway (required for Pro)
+    environment:
+      DEBUG: ${DEBUG:-}
+      PERSISTENCE: ${PERSISTENCE:-1}
+      SNAPSHOT_SAVE_STRATEGY: ${SNAPSHOT_SAVE_STRATEGY:-ON_SHUTDOWN}
+      LS_LOG: ${LS_LOG:-info}
+      LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: 120
+      LAMBDA_DOCKER_FLAGS: '-e NODE_OPTIONS="--enable-source-maps --inspect=0.0.0.0:9229" -p 0:9229'
+      DNS_NAME_PATTERNS_TO_RESOLVE_UPSTREAM: '(securityhub|securityhub-fips)\..*\.amazonaws\.com'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./localstack/data:/var/lib/localstack
+      - ./localstack/init/:/etc/localstack/init/

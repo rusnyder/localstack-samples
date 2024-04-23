@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "sourceMap": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "removeComments": false,
+    "declaration": true,
+    "outDir": "./build",
+    "experimentalDecorators": true,
+    "resolveJsonModule": true
+  },
+  "exclude": ["build", "dist", "node_modules"]
+}

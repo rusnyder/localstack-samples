@@ -1,0 +1,57 @@
+# vim: ft=bash
+set -eo pipefail
+
+# Constants
+export BIN_DIR=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
+export PRJ_DIR="$(cd "${BIN_DIR}/.." && pwd)"
+export DOCKER_COMPOSE_FILE="${PRJ_DIR}/docker-compose.yml"
+export VENV_DIR="${BIN_DIR}/venv"
+
+
+# Functions
+function _log_msg() {
+  local level="INFO"
+  if [[ "$#" == 2 ]]; then
+    level="$(echo $1 | tr '[:lower:]' '[:upper:]')"
+    shift 1
+  fi
+  echo "[$level] $@" >/dev/stderr
+}
+
+function log_info() {
+  _log_msg INFO "$@"
+}
+
+function log_err() {
+  _log_msg ERROR "$@"
+}
+
+function log_debug() {
+  case "$(echo "$VERBOSE" | tr '[:upper:]' '[:lower:]')" in
+    1|y|yes|t|true)
+      _log_msg DEBUG "$@"
+      ;;
+  esac
+}
+
+function fail() {
+  log_err "$@"
+  exit 1
+}
+
+function is_venv_active() {
+  [[ -f "$VENV_DIR/bin/activate" ]] && [[ "$VENV_DIR" -ef "$VIRTUAL_ENV" ]]
+}
+
+function activate_venv() {
+  if ! is_venv_active; then
+    log_debug "Activating virtualenv: ${VENV_DIR}"
+    . ${VENV_DIR}/bin/activate
+  fi
+}
+
+function export_localstack_aws_credentials() {
+  export AWS_ACCESS_KEY_ID="unset_for_localstack"
+  export AWS_SECRET_ACCESS_KEY="unset_for_localstack"
+  export AWS_REGION="us-east-1"
+}
